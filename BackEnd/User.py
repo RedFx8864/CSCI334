@@ -1,3 +1,4 @@
+#main User class and functions for them
 class User:
     nextId = 1
     
@@ -12,8 +13,10 @@ class User:
         userId = f"user{cls.nextId}"
         cls.nextId += 1
         return cls(userId, password, email)
-
+    
 
 user1 = User.createUser("jojo@gmail.com", "password123")
+user2 = User.createUser("janedoe@gmail.com", "password456")
 
-print(user1.userId + user1.email)
+print(user1.userId + " " + user1.email)
+print(user2.userId + " " + user2.email)
