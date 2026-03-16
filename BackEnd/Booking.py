@@ -11,6 +11,3 @@ class Booking:
         bookingId = f"booking{cls.nextId}"
         cls.nextId += 1
         return cls(bookingId, duration, date, startTime)
-    def getBookingById(cls, bookingId):
-        
-        pass

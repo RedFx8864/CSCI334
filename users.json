@@ -1,0 +1,15 @@
+[
+    {
+        "userId": "user1",
+        "email": "jojo@gmail.com",
+        "password": "password123",
+        "bookings": [
+            {
+                "bookingId": "booking1",
+                "duration": 2,
+                "date": "2026-03-16",
+                "startTime": "10:00"
+            }
+        ]
+    }
+]
