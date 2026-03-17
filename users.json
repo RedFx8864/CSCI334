@@ -11,5 +11,30 @@
                 "startTime": "10:00"
             }
         ]
+    },
+    {
+        "userId": "user2",
+        "email": "John1234@gmail.com",
+        "password": "password123",
+        "bookings": [
+            {
+                "bookingId": "booking1",
+                "duration": 2,
+                "date": "2024-07-01",
+                "startTime": "10:00"
+            }
+        ]
+    },
+    {
+        "userId": "user3",
+        "email": "redflame1980Liver@gmail.com",
+        "password": "Red123",
+        "bookings": []
+    },
+    {
+        "userId": "user4",
+        "email": "Ready1@gmail.com",
+        "password": "wrx1",
+        "bookings": []
     }
 ]
