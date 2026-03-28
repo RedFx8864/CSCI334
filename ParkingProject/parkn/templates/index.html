@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Park'n Home</title>
+  </head>
+  <body>
+    <h1>Welcome to Park'n</h1>
+
+    <!-- For testing REMOVE LATER-->
+    <h2>Users</h2>
+    <ol>
+      {% for user in users %}
+      <li>
+        {{user}}
+        <ul>
+          {% for booking in bookings %} {% if booking.user == user %}
+          <li>{{ booking }}</li>
+          {% endif %} {% endfor %}
+        </ul>
+      </li>
+      {% endfor %}
+    </ol>
+    <!-- For testing REMOVE LATER-->
+    <button onclick="location.href='{% url 'login' %}'">Login</button>
+    <button onclick="location.href='{% url 'register' %}'">Register</button>
+  </body>
+</html>
