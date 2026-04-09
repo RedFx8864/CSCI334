@@ -1,9 +1,11 @@
+{% load static %}
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Park'n Home</title>
+    <link rel="stylesheet" href="{% static 'styles/styles.css' %}" >
   </head>
   <body>
     <h1>Welcome to Park'n</h1>
@@ -25,5 +27,7 @@
     <!-- For testing REMOVE LATER-->
     <button onclick="location.href='{% url 'login' %}'">Login</button>
     <button onclick="location.href='{% url 'register' %}'">Register</button>
+
+    <script src="{% static 'js/script.js' %}"></script>
   </body>
 </html>
