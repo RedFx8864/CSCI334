@@ -1,22 +1,14 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
-class User(models.Model):
-    #id auto generated
-    password = models.CharField(max_length=128)
-    email = models.EmailField(unique=True)
-    isAdmin = models.BooleanField(default=False)
-    
-    #create user
-    @classmethod
-    def createUser(cls, email, password, isAdmin):
-        user = cls(password=password, email=email, isAdmin=isAdmin)
-        user.save()
-        return user
 
-    #return user info (for testing)
-    def __str__(self):
-        return f"User ID: {self.id} Email: {self.email}"
+#Using Django's Default User model which contains:
+# username – CharField (max 150, unique)
+# password – hashed password (CharField)
+# email – EmailField
+# first_name – Charfield
+# last_name – CharField
 
 class Booking(models.Model):
     #id auto generated

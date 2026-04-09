@@ -8,7 +8,13 @@
     <link rel="stylesheet" href="{% static 'styles/styles.css' %}" >
   </head>
   <body>
-    <button onclick="location.href='{% url 'index' %}'">Home</button>
+    <form method="POST">
+      {% csrf_token %}
+      {{form.as_p}}
+      <button type="submit">Register</button>
+    </form>
+
+    <button onclick="location.href='{% url 'index' %}'">Cancel</button>
 
     <script src="{% static 'js/script.js' %}"></script>
   </body>

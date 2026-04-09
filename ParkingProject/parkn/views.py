@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from .models import User, Booking
+from .forms import UserForm
 # Create your views here.
 
 #home page
@@ -16,4 +17,15 @@ def loginPage(request):
 
 #register Account page
 def registerPage(request):
-    return render(request, 'register.html')
+    if request.method == "POST":
+        form = UserForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            password = form.cleaned_data['password']
+            
+            #temporary: using email as username
+            User.objects.create_user(username=email, password=password)
+    else:
+        form = UserForm()
+    context={'form':form}
+    return render(request, 'register.html', context)
