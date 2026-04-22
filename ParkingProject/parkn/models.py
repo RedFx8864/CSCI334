@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 # email – EmailField
 # first_name – Charfield
 # last_name – CharField
+# add a user profile link it to User for additional attributes if needed (which is gonna be needed)
 
 class Booking(models.Model):
     #id auto generated
