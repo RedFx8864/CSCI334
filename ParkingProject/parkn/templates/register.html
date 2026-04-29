@@ -1,0 +1,21 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register Account</title>
+    <link rel="stylesheet" href="{% static 'styles/styles.css' %}" >
+  </head>
+  <body>
+    <form method="POST">
+      {% csrf_token %}
+      {{form.as_p}}
+      <button type="submit">Register</button>
+    </form>
+
+    <button onclick="location.href='{% url 'index' %}'">Cancel</button>
+
+    <script src="{% static 'js/script.js' %}"></script>
+  </body>
+</html>
