@@ -54,7 +54,8 @@ def registerPage(request):
     return render(request, 'register.html', context)
 
 @login_required
-def createBooking(request):
+#need to change into 2 step wizard for parking spot availability check, or AJAX
+def createBookingPage(request):
     if request.method == 'POST':
         form = BookingForm(request.POST)
         if form.is_valid():
