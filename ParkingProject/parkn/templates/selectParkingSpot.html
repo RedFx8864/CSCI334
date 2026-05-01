@@ -4,17 +4,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Register Account</title>
+    <title>Create Booking</title>
     <link rel="stylesheet" href="{% static 'styles/styles.css' %}" />
   </head>
   <body>
+    <h1>Create new Booking</h1>
+    <h3>Step 2: Select Parking Spot</h3>
     <form method="POST">
-      {% csrf_token %} {{form.as_p}}
-      <button type="submit">Register</button>
+      {% csrf_token %}
+
+        <label>Available Spots</label>
+        {{ form.parkingSpot }}
+
+        <button type="submit">Confirm Booking</button>
     </form>
 
-    <button onclick="location.href='{% url 'index' %}'">Cancel</button>
-
-    <script src="{% static 'js/script.js' %}"></script>
+  </body>
+</html>
   </body>
 </html>

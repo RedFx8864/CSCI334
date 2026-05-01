@@ -10,8 +10,24 @@
   <body>
     <h1>Create new Booking</h1>
     <form method="POST">
-      {% csrf_token %} {{form.as_p}}
-      <button type="submit">Create</button>
-    </form>
+      {% csrf_token %}
+      <h3>Step 1: Enter Details</h3>
+
+      <label>Zone</label>
+      {{ form.zone }}
+
+      <label>Date</label>
+      {{ form.date }}
+
+      <label>Start Time</label>
+      {{ form.startTime }}
+
+      <label>Duration (minutes)</label>
+      {{ form.duration }}
+
+      <button type="submit">Find Available Spots</button>
+
+  </body>
+</html>
   </body>
 </html>

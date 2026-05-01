@@ -3,8 +3,9 @@ from django.http import HttpResponse
 from django.contrib.auth.models import User #Django's default model
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .models import Booking
-from .forms import UserForm, BookingForm
+from .models import Booking, ParkingSpot, ParkingZone
+from .forms import UserForm, BookingForm, SelectParkingSpotForm
+from datetime import datetime
 
 # Create your views here.
 
@@ -54,19 +55,58 @@ def registerPage(request):
     return render(request, 'register.html', context)
 
 @login_required
-#need to change into 2 step wizard for parking spot availability check, or AJAX
 def createBookingPage(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = BookingForm(request.POST)
         if form.is_valid():
-            user = request.user
-            date = form.cleaned_data['date']
-            startTime = form.cleaned_data['startTime']
-            duration = form.cleaned_data['duration']
+            #save data so session
+            request.session["bookingData"] = {
+                "zoneId": form.cleaned_data["zone"].id,
+                "date": str(form.cleaned_data["date"]),
+                "startTime": str(form.cleaned_data["startTime"]),
+                "duration": form.cleaned_data["duration"]
+            }
+            return redirect('selectParkingSpot')
 
-            Booking.createBooking(user, date, startTime, duration)
-            return redirect('index')
     else:
         form = BookingForm()
-    context ={'form':form}
-    return render(request, 'createBooking.html', context)
+
+    return render(request, 'createBooking.html', {'form': form})
+
+@login_required
+def selectParkingSpot(request):
+    bookingData = request.session.get("bookingData")
+
+    if not bookingData:
+        return redirect("createBookingPage")
+
+    #get data from session
+    zone = ParkingZone.objects.get(id=bookingData["zoneId"])
+    date = datetime.strptime(bookingData["date"], "%Y-%m-%d").date()
+    startTime = datetime.strptime(bookingData["startTime"], "%H:%M:%S").time()
+    duration = bookingData["duration"]
+
+    #check available spots during the time frame
+    availableSpots = ParkingSpot.getAvailableSpots(zone, date, startTime, duration)
+
+    if request.method == "POST":
+        form = SelectParkingSpotForm(request.POST)
+        form.fields['parkingSpot'].queryset = availableSpots
+
+        if form.is_valid():
+            spot = form.cleaned_data["parkingSpot"]
+
+            Booking.createBooking(request.user, spot, date, startTime, duration)
+            #clean session data
+            del request.session["bookingData"]
+
+            return redirect("index") #or to a confirmation page, which i dont think we need
+
+    else:
+        form = SelectParkingSpotForm()
+        form.fields['parkingSpot'].queryset = availableSpots
+
+    return render(request, "selectParkingSpot.html", {
+        "form": form,
+        "availableSpots": availableSpots
+    })

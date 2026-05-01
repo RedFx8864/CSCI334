@@ -12,6 +12,7 @@ class BookingForm(forms.Form):
     startTime = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
     duration = forms.IntegerField(min_value=1)
 
+class SelectParkingSpotForm(forms.Form):
     parkingSpot = forms.ModelChoiceField(
         queryset=ParkingSpot.objects.none(), #update depending on info
         required=True
