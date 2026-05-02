@@ -7,12 +7,14 @@ from django.contrib.auth.models import User
 from .models import Booking, ParkingSpot, ParkingZone
 
 
+# Show a zone's bookings inside the admin page.
 class BookingInline(admin.TabularInline):
     model = Booking
     extra = 0
     fields = ("parkingSpot", "date", "startTime", "duration")
 
 
+# Show parking spots while editing a zone.
 class ParkingSpotInline(admin.TabularInline):
     model = ParkingSpot
     extra = 0
@@ -29,10 +31,12 @@ class ParkingZoneAdmin(admin.ModelAdmin):
 
     @admin.display(description="Spots")
     def spot_count(self, obj):
+        # Count how many spots are in this zone.
         return obj.parkingSpots.count()
 
     @admin.display(description="Bookings")
     def booking_count(self, obj):
+        # Count all bookings that belong to spots in this zone.
         return Booking.objects.filter(parkingSpot__zone=obj).count()
 
 
@@ -74,11 +78,13 @@ class BookingAdmin(admin.ModelAdmin):
 
     @admin.display(description="Ends at")
     def ends_at(self, obj):
+        # Work out the booking end time from start time and duration.
         return (
             datetime.combine(obj.date, obj.startTime) + timedelta(minutes=obj.duration)
         ).time()
 
 
+# Replace default User admin so we can add booking info.
 admin.site.unregister(User)
 
 
