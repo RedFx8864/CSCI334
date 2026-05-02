@@ -28,9 +28,11 @@
     <button onclick="location.href='{% url 'createBooking' %}'">
       Create Booking
     </button>
+    {% comment %}
     <button onclick="location.href='{% url 'updateBooking' %}'">
       Update Booking
     </button>
+    {% endcomment %}
     <br />
     <button onclick="location.href='{% url 'logout' %}'">Logout</button>
     <script src="{% static 'js/script.js' %}"></script>
