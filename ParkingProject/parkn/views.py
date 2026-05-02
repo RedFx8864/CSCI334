@@ -111,6 +111,12 @@ def selectParkingSpot(request):
         "availableSpots": availableSpots
     })
 
+@login_required
+def viewBookings(request):
+    bookings = request.user.bookings.all()
+    context = {"bookings": bookings}
+    return render(request, "booking/viewBookings.html", context)
+
 # @login_required
 # def updateBookingPage(request):
 #     if request.method == "POST":
