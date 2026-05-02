@@ -17,6 +17,9 @@ class ParkingZone(models.Model):
     location = models.CharField(max_length=200)
     totalSpots = models.IntegerField()
 
+    def __str__(self):
+        return self.name
+
 class ParkingSpot(models.Model):
     zone = models.ForeignKey(ParkingZone, on_delete=models.CASCADE, related_name='parkingSpots')
     xCoord = models.IntegerField()
@@ -42,7 +45,7 @@ class ParkingSpot(models.Model):
             if not conflict:
                 availableSpotIds.append(spot.id)
         return cls.objects.filter(id__in=availableSpotIds)
-        
+    
     def __str__(self):
         return f"{self.xCoord},{self.yCoord}"
 
@@ -61,6 +64,13 @@ class Booking(models.Model):
         booking = cls(user=user, parkingSpot=parkingSpot, date=date, startTime=startTime, duration=duration)
         booking.save()
         return booking
+
+    #update booking
+    def updateBooking(self, parkingSpot, date, startTime, duration):
+        self.parkingSpot = parkingSpot
+        self.date = date
+        self.startTime = startTime
+        self.duration = duration
 
     #return booking info for testing 
     def __str__(self):

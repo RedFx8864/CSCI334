@@ -4,20 +4,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Create Booking</title>
+    <title>Update Booking</title>
     <link rel="stylesheet" href="{% static 'styles/styles.css' %}" />
   </head>
   <body>
-    <h1>Create new Booking</h1>
-    <h3>Step 2: Select Parking Spot</h3>
+    <h1>Update Booking</h1>
     <form method="POST">
       {% csrf_token %}
+      <h3>Step 1: Edit Details</h3>
 
-        <label>Available Spots</label>
-        {{ form.parkingSpot }}
+      {{form.as_p}}
 
-        <button type="submit">Confirm Booking</button>
-    </form>
+      <button type="submit">Find New Spot</button>
 
   </body>
 </html>

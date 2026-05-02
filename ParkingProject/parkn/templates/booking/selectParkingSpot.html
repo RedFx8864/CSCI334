@@ -9,23 +9,14 @@
   </head>
   <body>
     <h1>Create new Booking</h1>
+    <h3>Step 2: Select Parking Spot</h3>
     <form method="POST">
       {% csrf_token %}
-      <h3>Step 1: Enter Details</h3>
 
-      <label>Zone</label>
-      {{ form.zone }}
+        {{form.as_p}}
 
-      <label>Date</label>
-      {{ form.date }}
-
-      <label>Start Time</label>
-      {{ form.startTime }}
-
-      <label>Duration (minutes)</label>
-      {{ form.duration }}
-
-      <button type="submit">Find Available Spots</button>
+        <button type="submit">Confirm Booking</button>
+    </form>
 
   </body>
 </html>
