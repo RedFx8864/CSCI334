@@ -66,7 +66,7 @@ def createBookingPage(request):
                 "startTime": str(form.cleaned_data["startTime"]),
                 "duration": form.cleaned_data["duration"]
             }
-            return redirect('booking/selectParkingSpot')
+            return redirect('selectParkingSpot')
 
     else:
         form = BookingForm()
@@ -78,7 +78,7 @@ def selectParkingSpot(request):
     bookingData = request.session.get("bookingData")
 
     if not bookingData:
-        return redirect("booking/createBookingPage")
+        return redirect("createBookingPage")
 
     #get data from session
     zone = ParkingZone.objects.get(id=bookingData["zoneId"])
@@ -129,7 +129,7 @@ def viewBookings(request):
 #                 "startTime": str(form.cleaned_data["startTime"]),
 #                 "duration": form.cleaned_data["duration"]
 #             }
-#             return redirect('booking/updateParkingSpot')
+#             return redirect('updateParkingSpot')
 
 #     else:
 #         form = BookingForm()
@@ -141,7 +141,7 @@ def viewBookings(request):
 #     bookingData = request.session.get("bookingData")
 
 #     if not bookingData:
-#         return redirect("booking/updateBookingPage")
+#         return redirect("updateBookingPage")
 
 #     #get data from session
 #     zone = ParkingZone.objects.get(id=bookingData["zoneId"])

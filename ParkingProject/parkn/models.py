@@ -74,4 +74,4 @@ class Booking(models.Model):
 
     #return booking info for testing 
     def __str__(self):
-        return f"Booking ID: {self.id}\nUserID: {self.user.id}\nParkingSpot: {self.parkingSpot}]\nDate: {self.date}\nTime: {self.startTime}\nDuration: {self.duration} minutes"
+        return f"Booking ID: {self.id}\nUserID: {self.user.id}\nParkingSpot: [{self.parkingSpot}]\nDate: {self.date}\nTime: {self.startTime}\nDuration: {self.duration} minutes"

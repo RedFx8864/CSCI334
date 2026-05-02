@@ -1,0 +1,34 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your Bookings</title>
+    <link rel="stylesheet" href="{% static 'styles/styles.css' %}" />
+  </head>
+  <body>
+    <h1>Your Bookings</h1>
+    <ol>
+    {% for booking in bookings %}
+    <li>
+        Zone: {{ booking.parkingSpot.zone.name }}<br>
+        Spot: {{ booking.parkingSpot }}<br>
+        Date: {{ booking.date }}<br>
+        Start Time: {{ booking.startTime }}<br>
+        Duration: {{ booking.duration }} minutes<br>
+        <button>
+        Edit{% comment %}need to make it work later {% endcomment %}
+        </button>
+    </li>
+    {% empty %}
+        No bookings found.
+    {% endfor %}
+    </ol>
+    <button onclick="location.href='{% url 'index' %}'">
+      Back
+    </button>
+  </body>
+</html>
+  </body>
+</html>
