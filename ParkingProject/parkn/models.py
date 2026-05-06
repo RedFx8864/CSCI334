@@ -73,6 +73,18 @@ class Booking(models.Model):
         self.duration = duration
         self.save()
 
+    #cancel booking
+    def cancelBooking(self, bookingId):
+        booking = Booking.objects.get(id=bookingId)
+        bookingStart = datetime.combine(booking.date, booking.startTime)
+        timeDiff = bookingStart - datetime.now
+        #cant cancel if booking starts in less than 120 mins
+        if timeDiff.total_seconds < 120*60: #link to some kind of admin panel so it cna be configured
+            return False
+        else:
+            booking.delete()
+            return True
+
     #return booking info for testing 
     def __str__(self):
         return f"Booking ID: {self.id}\nUserID: {self.user.id}\nParkingSpot: [{self.parkingSpot}]\nDate: {self.date}\nTime: {self.startTime}\nDuration: {self.duration} minutes"
