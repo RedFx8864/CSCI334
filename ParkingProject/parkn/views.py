@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth.models import User #Django's default model
 from django.contrib.auth import authenticate, login, logout
@@ -117,59 +117,65 @@ def viewBookings(request):
     context = {"bookings": bookings}
     return render(request, "booking/viewBookings.html", context)
 
-# @login_required
-# def updateBookingPage(request):
-#     if request.method == "POST":
-#         form = BookingForm(request.POST)
-#         if form.is_valid():
-#             #save data so session
-#             request.session["bookingData"] = {
-#                 "zoneId": form.cleaned_data["zone"].id,
-#                 "date": str(form.cleaned_data["date"]),
-#                 "startTime": str(form.cleaned_data["startTime"]),
-#                 "duration": form.cleaned_data["duration"]
-#             }
-#             return redirect('updateParkingSpot')
+@login_required
+def updateBookingPage(request, bookingId):
+    booking = get_object_or_404(Booking, id=bookingId, user=request.user)
+    if request.method == "POST":
+        form = BookingForm(request.POST)
+        if form.is_valid():
+            #save data so session
+            request.session["bookingData"] = {
+                "zoneId": form.cleaned_data["zone"].id,
+                "date": str(form.cleaned_data["date"]),
+                "startTime": str(form.cleaned_data["startTime"]),
+                "duration": form.cleaned_data["duration"]
+            }
+            return redirect('updateParkingSpot', bookingId=booking.id)
 
-#     else:
-#         form = BookingForm()
+    else:
+        #get parking zone
+        zone = booking.parkingSpot.zone
+        #fill form with existing details
+        form = form = BookingForm(initial={"zone":zone, "date": booking.date,"startTime": booking.startTime, "duration": booking.duration})
 
-#     return render(request, 'booking/updateBooking.html', {'form': form})
+    return render(request, 'booking/updateBooking.html', {'form': form})
 
-# @login_required
-# def updateParkingSpot(request):
-#     bookingData = request.session.get("bookingData")
+@login_required
+def updateParkingSpot(request, bookingId):
+    bookingData = request.session.get("bookingData")
 
-#     if not bookingData:
-#         return redirect("updateBookingPage")
+    if not bookingData:
+        return redirect("updateBookingPage")
 
-#     #get data from session
-#     zone = ParkingZone.objects.get(id=bookingData["zoneId"])
-#     date = datetime.strptime(bookingData["date"], "%Y-%m-%d").date()
-#     startTime = datetime.strptime(bookingData["startTime"], "%H:%M:%S").time()
-#     duration = bookingData["duration"]
+    #get data from session
+    zone = ParkingZone.objects.get(id=bookingData["zoneId"])
+    date = datetime.strptime(bookingData["date"], "%Y-%m-%d").date()
+    startTime = datetime.strptime(bookingData["startTime"], "%H:%M:%S").time()
+    duration = bookingData["duration"]
 
-#     #check available spots during the time frame
-#     availableSpots = ParkingSpot.getAvailableSpots(zone, date, startTime, duration)
+    #check available spots during the time frame
+    availableSpots = ParkingSpot.getAvailableSpots(zone, date, startTime, duration)
 
-#     if request.method == "POST":
-#         form = SelectParkingSpotForm(request.POST)
-#         form.fields['parkingSpot'].queryset = availableSpots
+    if request.method == "POST":
+        form = SelectParkingSpotForm(request.POST)
+        form.fields['parkingSpot'].queryset = availableSpots
 
-#         if form.is_valid():
-#             spot = form.cleaned_data["parkingSpot"]
+        if form.is_valid():
+            spot = form.cleaned_data["parkingSpot"]
+            #fetch booking
+            booking = Booking.objects.get(id=bookingId)
+            #update existing booking
+            booking.updateBooking(spot, date, startTime, duration)
+            #clean session data
+            del request.session["bookingData"]
 
-#             Booking.createBooking(request.user, spot, date, startTime, duration)
-#             #clean session data
-#             del request.session["bookingData"]
+            return redirect("index") #or to a confirmation page, which i dont think we need
 
-#             return redirect("index") #or to a confirmation page, which i dont think we need
+    else:
+        form = SelectParkingSpotForm()
+        form.fields['parkingSpot'].queryset = availableSpots
 
-#     else:
-#         form = SelectParkingSpotForm()
-#         form.fields['parkingSpot'].queryset = availableSpots
-
-#     return render(request, "booking/updateParkingSpot.html", {
-#         "form": form,
-#         "availableSpots": availableSpots
-#     })
+    return render(request, "booking/updateParkingSpot.html", {
+        "form": form,
+        "availableSpots": availableSpots
+    })

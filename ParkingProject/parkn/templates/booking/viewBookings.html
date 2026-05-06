@@ -17,8 +17,8 @@
         Date: {{ booking.date }}<br>
         Start Time: {{ booking.startTime }}<br>
         Duration: {{ booking.duration }} minutes<br>
-        <button>
-        Edit{% comment %}need to make it work later {% endcomment %}
+        <button onclick="location.href='{% url 'updateBooking' booking.id %}'">
+        Edit
         </button>
     </li>
     {% empty %}

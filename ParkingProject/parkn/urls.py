@@ -9,6 +9,6 @@ urlpatterns = [
     path("createBooking/", views.createBookingPage, name="createBooking"),
     path("selectParkingSpot/", views.selectParkingSpot, name="selectParkingSpot"),
     path("viewBookings/", views.viewBookings, name="viewBookings"),
-    # path("updateBooking/", views.updateBookingPage, name="updateBooking"),
-    # path("updateParkingSpot/", views.updateParkingSpot, name="updateParkingSpot"),
+    path("updateBooking/<int:bookingId>", views.updateBookingPage, name="updateBooking"),
+    path("updateParkingSpot/<int:bookingId>", views.updateParkingSpot, name="updateParkingSpot"),
 ]

@@ -71,6 +71,7 @@ class Booking(models.Model):
         self.date = date
         self.startTime = startTime
         self.duration = duration
+        self.save()
 
     #return booking info for testing 
     def __str__(self):
