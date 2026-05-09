@@ -5,6 +5,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 
 from .models import Booking, ParkingSpot, ParkingZone
+from django.utils import timezone
 
 
 # Show a zone's bookings inside the admin page.
@@ -31,7 +32,7 @@ class ParkingZoneAdmin(admin.ModelAdmin):
 
     @admin.display(description="Spots")
     def spot_count(self, obj):
-        # Count how many spots are in this zone.
+        # Counting how many spots are in this zone.
         return obj.parkingSpots.count()
 
     @admin.display(description="Bookings")
@@ -75,6 +76,30 @@ class BookingAdmin(admin.ModelAdmin):
     date_hierarchy = "date"
     ordering = ("-date", "-startTime")
     raw_id_fields = ("user", "parkingSpot")
+
+    actions = ["cancel_selected_bookings"]
+
+    def cancel_selected_bookings(self, request, queryset):
+        """Admin action: cancel selected bookings if they start >= 120 minutes from now."""
+        success = 0
+        failed = 0
+        for booking in queryset:
+            booking_start = datetime.combine(booking.date, booking.startTime)
+            # using naive now to match models datetime usage
+            time_diff = booking_start - datetime.now()
+            if time_diff.total_seconds() < 120 * 60:
+                failed += 1
+            else:
+                booking.delete()
+                success += 1
+        self.message_user(
+            request,
+            f"Cancelled {success} booking(s). {failed} booking(s) were within 120 minutes and were not cancelled.",
+        )
+
+    cancel_selected_bookings.short_description = (
+        "Cancel selected bookings (respect 120-min window)"
+    )
 
     @admin.display(description="Ends at")
     def ends_at(self, obj):
