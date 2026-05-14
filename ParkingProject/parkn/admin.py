@@ -3,28 +3,45 @@ from datetime import datetime, timedelta
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
-
-from .models import Booking, ParkingSpot, ParkingZone
 from django.utils import timezone
 
+from .models import Booking, ParkingSpot, ParkingZone
 
-# Show a zone's bookings inside the admin page.
-class BookingInline(admin.TabularInline):
+
+# Here I`m showing a user`s bookings while editing a user.
+class UserBookingInline(admin.TabularInline):
     model = Booking
     extra = 0
     fields = ("parkingSpot", "date", "startTime", "duration")
+    show_change_link = True
 
 
-# Show parking spots while editing a zone.
+# here i am showing a parking spot`s bookings while editing a spot.
+class SpotBookingInline(admin.TabularInline):
+    model = Booking
+    extra = 0
+    fields = ("user", "date", "startTime", "duration")
+    show_change_link = True
+
+
+# In this section i am showing parking spots while editing a zone.
 class ParkingSpotInline(admin.TabularInline):
     model = ParkingSpot
     extra = 0
     fields = ("xCoord", "yCoord")
+    show_change_link = True
 
 
 @admin.register(ParkingZone)
 class ParkingZoneAdmin(admin.ModelAdmin):
-    list_display = ("name", "location", "totalSpots", "spot_count", "booking_count")
+    list_display = (
+        "name",
+        "location",
+        "totalSpots",
+        "spot_count",
+        "remaining_spots",
+        "booking_count",
+    )
     search_fields = ("name", "location")
     list_filter = ("location",)
     ordering = ("name",)
@@ -35,9 +52,13 @@ class ParkingZoneAdmin(admin.ModelAdmin):
         # Counting how many spots are in this zone.
         return obj.parkingSpots.count()
 
+    @admin.display(description="Remaining Spots")
+    def remaining_spots(self, obj):
+        return obj.totalSpots - obj.parkingSpots.count()
+
     @admin.display(description="Bookings")
     def booking_count(self, obj):
-        # Count all bookings that belong to spots in this zone.
+        # here we need to count all bookings that belong to spots in this zone.
         return Booking.objects.filter(parkingSpot__zone=obj).count()
 
 
@@ -47,7 +68,9 @@ class ParkingSpotAdmin(admin.ModelAdmin):
     search_fields = ("zone__name", "zone__location", "xCoord", "yCoord")
     list_filter = ("zone",)
     ordering = ("zone__name", "xCoord", "yCoord")
-    inlines = [BookingInline]
+    inlines = [SpotBookingInline]
+    autocomplete_fields = ("zone",)
+    list_select_related = ("zone",)
 
     @admin.display(description="Bookings")
     def booking_count(self, obj):
@@ -76,6 +99,9 @@ class BookingAdmin(admin.ModelAdmin):
     date_hierarchy = "date"
     ordering = ("-date", "-startTime")
     raw_id_fields = ("user", "parkingSpot")
+    autocomplete_fields = ("user", "parkingSpot")
+    list_select_related = ("user", "parkingSpot", "parkingSpot__zone")
+    readonly_fields = ("ends_at",)
 
     actions = ["cancel_selected_bookings"]
 
@@ -84,10 +110,7 @@ class BookingAdmin(admin.ModelAdmin):
         success = 0
         failed = 0
         for booking in queryset:
-            booking_start = datetime.combine(booking.date, booking.startTime)
-            # using naive now to match models datetime usage
-            time_diff = booking_start - datetime.now()
-            if time_diff.total_seconds() < 120 * 60:
+            if not booking.can_cancel(now=timezone.now()):
                 failed += 1
             else:
                 booking.delete()
@@ -103,13 +126,13 @@ class BookingAdmin(admin.ModelAdmin):
 
     @admin.display(description="Ends at")
     def ends_at(self, obj):
-        # Work out the booking end time from start time and duration.
+        # Working in the booking end time from start time and duration
         return (
             datetime.combine(obj.date, obj.startTime) + timedelta(minutes=obj.duration)
         ).time()
 
 
-# Replace default User admin so we can add booking info.
+# Replacing default user admin so we can add booking info
 admin.site.unregister(User)
 
 
@@ -127,7 +150,8 @@ class CustomUserAdmin(BaseUserAdmin):
     search_fields = ("username", "email", "first_name", "last_name")
     list_filter = ("is_staff", "is_active", "is_superuser", "groups")
     ordering = ("username",)
-    inlines = [BookingInline]
+    inlines = [UserBookingInline]
+    list_select_related = ()
 
     @admin.display(description="Bookings")
     def booking_count(self, obj):
