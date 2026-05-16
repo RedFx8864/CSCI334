@@ -1,0 +1,197 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Parking Dashboard</title>
+
+    <link rel="stylesheet" href="{% static 'dashboard/dashboard.css' %}">
+</head>
+
+<body>
+
+    <h1>Parking Dashboard</h1>
+
+    <form method="GET">
+
+        <label>
+            Filter by Zone:
+        </label>
+
+        <select name="zone" onchange="this.form.submit()">
+
+            <option value="">
+                All Zones
+            </option>
+
+            {% for zone in zones %}
+
+            <option value="{{ zone.id }}" {% if selected_zone_id == zone.id|stringformat:"s" %} selected {% endif %}>
+
+                {{ zone }}
+
+            </option>
+
+            {% endfor %}
+
+        </select>
+
+    </form>
+
+
+    <!-- Summary Cards -->
+
+    <div class="dashboard-cards">
+
+        <div class="card">
+
+            <h3>Total Spots</h3>
+
+            <p id="total">
+
+                {{ total_spots }}
+
+            </p>
+
+        </div>
+
+
+        <div class="card">
+
+            <h3>Available Spots</h3>
+
+            <p id="available">
+
+                {{ available_spots }}
+
+            </p>
+
+        </div>
+
+
+        <div class="card">
+
+            <h3>Occupied Spots</h3>
+
+            <p id="occupied">
+
+                {{ occupied_spots }}
+
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- Last Updated -->
+
+    <p>
+
+        Last Updated:
+
+        <span id="lastUpdated">
+
+            {{ last_updated }}
+
+        </span>
+
+    </p>
+
+
+    {% if is_admin %}
+
+    <div class="card">
+
+        <h3>Utilisation Rate</h3>
+
+        <p>
+
+            {% widthratio occupied_spots total_spots 100 %}% used
+
+        </p>
+
+    </div>
+
+    {% endif %}
+
+
+    <h2>Parking Layout</h2>
+
+
+    <div class="parking-layout">
+
+        {% for spot in spots %}
+
+        {% if spot.id in occupied_spot_ids %}
+
+        <div class="spot occupied" data-spot-id="{{ spot.id }}">
+
+            Spot {{ spot.id }}
+
+            <br>
+
+            Occupied
+
+        </div>
+
+        {% else %}
+
+        <div class="spot available" data-spot-id="{{ spot.id }}">
+
+            Spot {{ spot.id }}
+
+            <br>
+
+            Available
+
+        </div>
+
+        {% endif %}
+
+        {% endfor %}
+
+    </div>
+
+
+    <br>
+
+
+    <button onclick="location.href='{% url 'index' %}'">
+
+        Home
+
+    </button>
+
+
+    <button onclick="location.href='{% url 'createBooking' %}'">
+
+        Create Booking
+
+    </button>
+
+
+    <button onclick="location.href='{% url 'viewBookings' %}'">
+
+        View Bookings
+
+    </button>
+
+
+    <button onclick="location.href='{% url 'logout' %}'">
+
+        Logout
+
+    </button>
+
+
+    <script src="{% static 'dashboard/dashboard.js' %}">
+    </script>
+
+
+</body>
+
+</html>

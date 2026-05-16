@@ -1,0 +1,268 @@
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse
+from django.contrib.auth.models import User #Django's default model
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from .models import Booking, ParkingSpot, ParkingZone
+from .forms import UserForm, BookingForm, SelectParkingSpotForm
+from datetime import datetime, timedelta
+from django.http import JsonResponse
+from django.utils import timezone
+
+# Create your views here.
+
+#home page
+@login_required
+def indexPage(request):
+    users = User.objects.all()
+    bookings = Booking.objects.all()
+    context = {'users':users, 'bookings':bookings}
+    return render(request, 'index.html', context)
+
+#Login Page
+def loginPage(request):
+    error = None
+    
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+
+        user = authenticate(request, username=email, password=password)
+
+        if user is not None:
+            login(request, user)
+            return redirect('index')
+        else:
+            error = 'Invalid credentials'
+    return render(request, 'login.html', {'error': error})
+
+@login_required
+def logoutPage(request):
+    logout(request)
+    return redirect('login')
+
+#register Account page
+def registerPage(request):
+    if request.method == 'POST':
+        form = UserForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            password = form.cleaned_data['password']
+            
+            #temporary: using email as username
+            User.objects.create_user(username=email, password=password)
+    else:
+        form = UserForm()
+    context={'form':form}
+    return render(request, 'register.html', context)
+
+@login_required
+def createBookingPage(request):
+    if request.method == "POST":
+        form = BookingForm(request.POST)
+        if form.is_valid():
+            #save data so session
+            request.session["bookingData"] = {
+                "zoneId": form.cleaned_data["zone"].id,
+                "date": str(form.cleaned_data["date"]),
+                "startTime": str(form.cleaned_data["startTime"]),
+                "duration": form.cleaned_data["duration"]
+            }
+            return redirect('selectParkingSpot')
+
+    else:
+        form = BookingForm()
+
+    return render(request, 'booking/createBooking.html', {'form': form})
+
+@login_required
+def selectParkingSpot(request):
+    bookingData = request.session.get("bookingData")
+
+    if not bookingData:
+        return redirect("createBookingPage")
+
+    #get data from session
+    zone = ParkingZone.objects.get(id=bookingData["zoneId"])
+    date = datetime.strptime(bookingData["date"], "%Y-%m-%d").date()
+    startTime = datetime.strptime(bookingData["startTime"], "%H:%M:%S").time()
+    duration = bookingData["duration"]
+
+    #check available spots during the time frame
+    availableSpots = ParkingSpot.getAvailableSpots(zone, date, startTime, duration)
+
+    if request.method == "POST":
+        form = SelectParkingSpotForm(request.POST)
+        form.fields['parkingSpot'].queryset = availableSpots
+
+        if form.is_valid():
+            spot = form.cleaned_data["parkingSpot"]
+
+            Booking.createBooking(request.user, spot, date, startTime, duration)
+            #clean session data
+            del request.session["bookingData"]
+
+            return redirect("index") #or to a confirmation page, which i dont think we need
+
+    else:
+        form = SelectParkingSpotForm()
+        form.fields['parkingSpot'].queryset = availableSpots
+
+    return render(request, "booking/selectParkingSpot.html", {
+        "form": form,
+        "availableSpots": availableSpots
+    })
+
+@login_required
+def viewBookings(request):
+    bookings = request.user.bookings.all()
+    context = {"bookings": bookings}
+    return render(request, "booking/viewBookings.html", context)
+
+@login_required
+def updateBookingPage(request, bookingId):
+    booking = get_object_or_404(Booking, id=bookingId, user=request.user)
+    if request.method == "POST":
+        form = BookingForm(request.POST)
+        if form.is_valid():
+            #save data so session
+            request.session["bookingData"] = {
+                "zoneId": form.cleaned_data["zone"].id,
+                "date": str(form.cleaned_data["date"]),
+                "startTime": str(form.cleaned_data["startTime"]),
+                "duration": form.cleaned_data["duration"]
+            }
+            return redirect('updateParkingSpot', bookingId=booking.id)
+
+    else:
+        #get parking zone
+        zone = booking.parkingSpot.zone
+        #fill form with existing details
+        form = form = BookingForm(initial={"zone":zone, "date": booking.date,"startTime": booking.startTime, "duration": booking.duration})
+
+    return render(request, 'booking/updateBooking.html', {'form': form})
+
+@login_required
+def updateParkingSpot(request, bookingId):
+    bookingData = request.session.get("bookingData")
+
+    if not bookingData:
+        return redirect("updateBookingPage")
+
+    #get data from session
+    zone = ParkingZone.objects.get(id=bookingData["zoneId"])
+    date = datetime.strptime(bookingData["date"], "%Y-%m-%d").date()
+    startTime = datetime.strptime(bookingData["startTime"], "%H:%M:%S").time()
+    duration = bookingData["duration"]
+
+    #check available spots during the time frame
+    availableSpots = ParkingSpot.getAvailableSpots(zone, date, startTime, duration)
+
+    if request.method == "POST":
+        form = SelectParkingSpotForm(request.POST)
+        form.fields['parkingSpot'].queryset = availableSpots
+
+        if form.is_valid():
+            spot = form.cleaned_data["parkingSpot"]
+            #fetch booking
+            booking = Booking.objects.get(id=bookingId)
+            #update existing booking
+            booking.updateBooking(spot, date, startTime, duration)
+            #clean session data
+            del request.session["bookingData"]
+
+            return redirect("index") #or to a confirmation page, which i dont think we need
+
+    else:
+        form = SelectParkingSpotForm()
+        form.fields['parkingSpot'].queryset = availableSpots
+
+    return render(request, "booking/updateParkingSpot.html", {
+        "form": form,
+        "availableSpots": availableSpots
+    })
+
+#DASHBOARD
+
+def get_occupied_booking_spot_ids():
+    occupied_ids = Booking.objects.values_list(
+        "parkingSpot_id",
+        flat=True
+    ).distinct()
+
+    return list(occupied_ids)
+
+
+# Dashboard page
+@login_required
+def dashboardPage(request):
+    selected_zone_id = request.GET.get("zone")
+
+    zones = ParkingZone.objects.all()
+
+    if selected_zone_id:
+        spots = ParkingSpot.objects.filter(
+            zone_id=selected_zone_id
+        )
+    else:
+        spots = ParkingSpot.objects.all()
+
+    total_spots = spots.count()
+
+    occupied_spot_ids = get_occupied_booking_spot_ids()
+
+    occupied_spots = spots.filter(
+        id__in=occupied_spot_ids
+    ).count()
+
+    available_spots = total_spots - occupied_spots
+
+    context = {
+        "zones": zones,
+        "selected_zone_id": selected_zone_id,
+        "spots": spots,
+        "occupied_spot_ids": occupied_spot_ids,
+        "total_spots": total_spots,
+        "available_spots": available_spots,
+        "occupied_spots": occupied_spots,
+        "last_updated": timezone.now(),
+        "is_admin": request.user.is_staff,
+    }
+
+    return render(
+        request,
+        "dashboard/dashboard.html",
+        context
+    )
+
+
+# Dashboard API
+@login_required
+def dashboardData(request):
+
+    selected_zone_id = request.GET.get("zone")
+
+    if selected_zone_id:
+        spots = ParkingSpot.objects.filter(
+            zone_id=selected_zone_id
+        )
+    else:
+        spots = ParkingSpot.objects.all()
+
+    total_spots = spots.count()
+
+    occupied_spot_ids = get_occupied_booking_spot_ids()
+
+    occupied_spots = spots.filter(
+        id__in=occupied_spot_ids
+    ).count()
+
+    available_spots = total_spots - occupied_spots
+
+    return JsonResponse({
+        "total": total_spots,
+        "available": available_spots,
+        "occupied": occupied_spots,
+        "occupied_spot_ids": occupied_spot_ids,
+        "last_updated": timezone.now().strftime("%I:%M:%S %p"),
+    })
