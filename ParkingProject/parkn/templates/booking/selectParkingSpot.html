@@ -1,0 +1,24 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Booking</title>
+    <link rel="stylesheet" href="{% static 'styles/styles.css' %}" />
+  </head>
+  <body>
+    <h1>Create new Booking</h1>
+    <h3>Step 2: Select Parking Spot</h3>
+    <form method="POST">
+      {% csrf_token %}
+
+        {{form.as_p}}
+
+        <button type="submit">Confirm Booking</button>
+    </form>
+
+  </body>
+</html>
+  </body>
+</html>
