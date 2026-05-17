@@ -11,4 +11,5 @@ urlpatterns = [
     path("viewBookings/", views.viewBookings, name="viewBookings"),
     path("updateBooking/<int:bookingId>", views.updateBookingPage, name="updateBooking"),
     path("updateParkingSpot/<int:bookingId>", views.updateParkingSpot, name="updateParkingSpot"),
+    path("cancelBooking/<int:bookingId>", views.cancelBooking, name="cancelBooking"),
 ]

@@ -179,3 +179,8 @@ def updateParkingSpot(request, bookingId):
         "form": form,
         "availableSpots": availableSpots
     })
+
+#delete booking
+def cancelBooking(request, bookingId):
+    Booking.cancelBooking(bookingId)
+    return redirect("viewBookings")

@@ -74,12 +74,13 @@ class Booking(models.Model):
         self.save()
 
     #cancel booking
-    def cancelBooking(self, bookingId):
+    @classmethod
+    def cancelBooking(cls, bookingId):
         booking = Booking.objects.get(id=bookingId)
         bookingStart = datetime.combine(booking.date, booking.startTime)
-        timeDiff = bookingStart - datetime.now
+        timeDiff = bookingStart - datetime.now()
         #cant cancel if booking starts in less than 120 mins
-        if timeDiff.total_seconds < 120*60: #link to some kind of admin panel so it cna be configured
+        if timeDiff.total_seconds() < 120*60: #link to some kind of admin panel so it cna be configured
             return False
         else:
             booking.delete()
