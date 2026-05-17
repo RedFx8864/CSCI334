@@ -17,9 +17,13 @@
         Date: {{ booking.date }}<br>
         Start Time: {{ booking.startTime }}<br>
         Duration: {{ booking.duration }} minutes<br>
+        Booknig Active Status: {{ booking.isActive }} <br>
+        {% comment %} only show edit if booking is not finished {% endcomment %}
+        {% if booking.isActive %}
         <button onclick="location.href='{% url 'updateBooking' booking.id %}'">
         Edit
         </button>
+        {% endif %}
     </li>
     {% empty %}
         No bookings found.

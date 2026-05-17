@@ -85,6 +85,16 @@ class Booking(models.Model):
             booking.delete()
             return True
 
+    #check if booking is active
+    @property
+    def isActive(self):
+        bookingEnd = datetime.combine(
+            self.date,
+            self.startTime
+        ) + timedelta(minutes=self.duration)
+
+        return datetime.now() < bookingEnd
+
     #return booking info for testing 
     def __str__(self):
         return f"Booking ID: {self.id}\nUserID: {self.user.id}\nParkingSpot: [{self.parkingSpot}]\nDate: {self.date}\nTime: {self.startTime}\nDuration: {self.duration} minutes"
