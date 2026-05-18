@@ -3,9 +3,10 @@ from django.http import HttpResponse
 from django.contrib.auth.models import User #Django's default model
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .models import Booking, ParkingSpot, ParkingZone
+from .models import Booking, ParkingSpot, ParkingZone, Recommendation, HourAvailability
 from .forms import UserForm, BookingForm, SelectParkingSpotForm
 from datetime import datetime
+from .gen_data import GenData
 
 # Create your views here.
 
@@ -14,7 +15,9 @@ from datetime import datetime
 def indexPage(request):
     users = User.objects.all()
     bookings = Booking.objects.all()
-    context = {'users':users, 'bookings':bookings}
+    recommendation = Recommendation()
+    recommend = recommendation.getRecommendation()
+    context = {'users':users, 'bookings':bookings, 'recommendation':recommend}
     return render(request, 'index.html', context)
 
 #Login Page
@@ -29,6 +32,13 @@ def loginPage(request):
 
         if user is not None:
             login(request, user)
+
+            try:
+                ha = HourAvailability.objects.all()
+            except:
+                gd = GenData()
+                gd.runner
+
             return redirect('index')
         else:
             error = 'Invalid credentials'

@@ -99,3 +99,54 @@ class Booking(models.Model):
     #return booking info for testing 
     def __str__(self):
         return f"Booking ID: {self.id}\nUserID: {self.user.id}\nParkingSpot: [{self.parkingSpot}]\nDate: {self.date}\nTime: {self.startTime}\nDuration: {self.duration} minutes"
+    
+class HourAvailability(models.Model):
+    timedate = models.DateTimeField()
+    unavailabilityPercent = models.IntegerField()
+
+    def __str__(self):
+        return self.name
+
+    #Create Recorded Timeslots
+    @classmethod
+    def createHourAvailability(cls, timedate, unavailabilityPercent):
+        hourAvail = cls(timedate=timedate, unavailabilityPercent=unavailabilityPercent)
+        hourAvail.save()
+        return hourAvail
+
+class Recommendation(models.Model):
+
+    #generate recommendation
+    def getRecommendation(self):
+        return self.calculateRecommendation()
+
+    def calculateRecommendation(self):
+        currentd = datetime.now()
+        try:
+            hourAvailabilities = HourAvailability.objects.all()
+        except HourAvailability.DoesNotExist:
+            print("failed to find houravailability object")
+
+        rec1 = HourAvailability
+        rec2 = HourAvailability
+        rec3 = HourAvailability
+        for hourAvail in hourAvailabilities:
+            if (hourAvail.timedate.month == currentd.month) & (hourAvail.timedate.time > currentd.time) & (hourAvail.timedate.weekday == currentd.weekday -1):
+                if hourAvail.unavailabilityPercent < rec1.unavailabilityPercent:
+                    rec1 = hourAvail
+                elif hourAvail.unavailabilityPercent < rec2.unavailabilityPercent:
+                    rec2 = hourAvail
+                elif hourAvail.unavailabilityPercent < rec3.unavailabilityPercent:
+                    rec3 = hourAvail
+        
+        i=0
+        while i<3:
+            if (rec1.unavailability == 100):
+                rec1.unavailability = 0
+            if (rec2.unavailability == 100):
+                rec2.unavailability = 0
+            if (rec3.unavailability == 100):
+                rec3.unavailability = 0
+
+        set = [rec1, rec2, rec3]
+        return set

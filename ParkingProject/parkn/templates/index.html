@@ -40,6 +40,19 @@
     </button>
     {% endcomment %}
     <br />
+
+  <!-- =============================== PARKING RECCOMENDATION =============================== -->
+    <div>
+      <h2>
+        Parking Time Reccomendation
+      </h2>
+      <ul>
+        {% for item in recommendation %}
+        <li>{{item}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+
     <button onclick="location.href='{% url 'logout' %}'">Logout</button>
     <script src="{% static 'js/script.js' %}"></script>
   </body>
