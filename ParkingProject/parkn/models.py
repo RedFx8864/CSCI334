@@ -105,7 +105,7 @@ class HourAvailability(models.Model):
     unavailabilityPercent = models.IntegerField()
 
     def __str__(self):
-        return self.name
+        return f"{self.timedate},{self.unavailabilityPercent}"
 
     #Create Recorded Timeslots
     @classmethod
@@ -116,37 +116,53 @@ class HourAvailability(models.Model):
 
 class Recommendation(models.Model):
 
-    #generate recommendation
-    def getRecommendation(self):
-        return self.calculateRecommendation()
-
     def calculateRecommendation(self):
         currentd = datetime.now()
-        try:
-            hourAvailabilities = HourAvailability.objects.all()
-        except HourAvailability.DoesNotExist:
-            print("failed to find houravailability object")
-
-        rec1 = HourAvailability
-        rec2 = HourAvailability
-        rec3 = HourAvailability
-        for hourAvail in hourAvailabilities:
-            if (hourAvail.timedate.month == currentd.month) & (hourAvail.timedate.time > currentd.time) & (hourAvail.timedate.weekday == currentd.weekday -1):
-                if hourAvail.unavailabilityPercent < rec1.unavailabilityPercent:
-                    rec1 = hourAvail
-                elif hourAvail.unavailabilityPercent < rec2.unavailabilityPercent:
-                    rec2 = hourAvail
-                elif hourAvail.unavailabilityPercent < rec3.unavailabilityPercent:
-                    rec3 = hourAvail
+        hourAvailabilities = HourAvailability.objects.all()
         
-        i=0
-        while i<3:
-            if (rec1.unavailability == 100):
-                rec1.unavailability = 0
-            if (rec2.unavailability == 100):
-                rec2.unavailability = 0
-            if (rec3.unavailability == 100):
-                rec3.unavailability = 0
+        if hourAvailabilities:
+            print("hour availabilities found")
+            datestr = "2025-01-01 00:00:00"
+            fcode = "%Y-%m-%d %H:%M:%S"
+            rec1 = HourAvailability()
+            rec1.timedate = datetime.strptime(datestr, fcode)
+            rec1.unavailabilityPercent = 100
+            rec2 = HourAvailability()
+            rec2.timedate = datetime.strptime(datestr, fcode)
+            rec2.unavailabilityPercent = 100
+            rec3 = HourAvailability()
+            rec3.timedate = datetime.strptime(datestr, fcode)
+            rec3.unavailabilityPercent = 100
 
-        set = [rec1, rec2, rec3]
-        return set
+            j = 0
+
+            print("individual looping precheck...")
+            for hourAvail in hourAvailabilities:
+                    if (hourAvail.timedate.month == currentd.month) & (hourAvail.timedate.day == currentd.day):
+                        if (hourAvail.timedate.time() > currentd.time()) & (hourAvail.timedate.weekday() == currentd.weekday() -1):
+                            print("date and week check success")
+                            if hourAvail.unavailabilityPercent < rec1.unavailabilityPercent:
+                                print("spot 1 check success")
+                                rec1.unavailabilityPercent = hourAvail.unavailabilityPercent
+                                rec1.timedate = hourAvail.timedate
+                                print("spot 1 store success")
+                            elif hourAvail.unavailabilityPercent < rec2.unavailabilityPercent:
+                                print("spot 2 check success")
+                                rec2.unavailabilityPercent = hourAvail.unavailabilityPercent
+                                rec2.timedate = hourAvail.timedate
+                                print("spot 2 store success")
+                            elif hourAvail.unavailabilityPercent < rec3.unavailabilityPercent:
+                                print("spot 3 check success")
+                                rec3.unavailabilityPercent = hourAvail.unavailabilityPercent
+                                rec3.timedate = hourAvail.timedate
+                                print("spot 3 store success")
+
+            set = [rec1, rec2, rec3]
+            data = {}
+            i=0
+            while i<3:
+                data.update({"time":set[i].timedate.strftime('%H:%M:%S'), "percent":set[i].unavailabilityPercent})
+                i+=1
+            return data
+        else:
+            print("No houravailabilities to reference")

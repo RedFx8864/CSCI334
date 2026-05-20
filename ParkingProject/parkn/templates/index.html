@@ -41,17 +41,22 @@
     {% endcomment %}
     <br />
 
-  <!-- =============================== PARKING RECCOMENDATION =============================== -->
+  <!-- =============================== PARKING RECOMMENDATION =============================== -->
     <div>
       <h2>
-        Parking Time Reccomendation
+        Parking Time Recommendation
       </h2>
-      <ul>
-        {% for item in recommendation %}
-        <li>{{item}}</li>
-        {% endfor %}
-      </ul>
+      {% if recommendation %}
+        </ol>
+          {% for key, value in recommendation.items %}
+            <li>{{ key }} {{ value }}</li>
+          {% endfor %}
+        </ol>
+      {% else %}
+        <p> Failure to load, check that data was generated </p>
+      {% endif %}
     </div>
+    <br />
 
     <button onclick="location.href='{% url 'logout' %}'">Logout</button>
     <script src="{% static 'js/script.js' %}"></script>

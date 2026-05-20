@@ -6,18 +6,20 @@ from django.contrib.auth.decorators import login_required
 from .models import Booking, ParkingSpot, ParkingZone, Recommendation, HourAvailability
 from .forms import UserForm, BookingForm, SelectParkingSpotForm
 from datetime import datetime
-from .gen_data import GenData
+from .gen_data import runner
 
 # Create your views here.
+
+#Data generation toggle
+generatedata = False
 
 #home page
 @login_required
 def indexPage(request):
     users = User.objects.all()
     bookings = Booking.objects.all()
-    recommendation = Recommendation()
-    recommend = recommendation.getRecommendation()
-    context = {'users':users, 'bookings':bookings, 'recommendation':recommend}
+    recommendation = Recommendation().calculateRecommendation()
+    context = {'users':users, 'bookings':bookings, 'recommendation':recommendation}
     return render(request, 'index.html', context)
 
 #Login Page
@@ -28,17 +30,28 @@ def loginPage(request):
         email = request.POST.get('email')
         password = request.POST.get('password')
 
+        #+++++++++++++++++++++++++++++++++++++++ START OF: Establishing past year data +++++++++++++++++++++++++++++++++++++++
+        ha = HourAvailability.objects.all()
+        if (ha) and (generatedata == True):
+            print("houravailabilities have been removed")
+            HourAvailability.objects.all().delete()
+            print("regenerating data...")
+            runner()
+            print("complete")
+        elif (ha) and (generatedata == False):
+            print("Data detected, skipping...")
+            pass
+        else:
+            HourAvailability.objects.all().delete()
+            print("generating houravailabilities...")
+            runner()
+            print("complete")
+        #+++++++++++++++++++++++++++++++++++++++ END OF: Establishing past year data +++++++++++++++++++++++++++++++++++++++
+
         user = authenticate(request, username=email, password=password)
 
         if user is not None:
             login(request, user)
-
-            try:
-                ha = HourAvailability.objects.all()
-            except:
-                gd = GenData()
-                gd.runner
-
             return redirect('index')
         else:
             error = 'Invalid credentials'

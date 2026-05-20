@@ -15,14 +15,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='HourAvailability',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('timedate', models.DateTimeField()),
-                ('unavailabilityPercent', models.IntegerField()),
-            ],
-        ),
-        migrations.CreateModel(
             name='ParkingSpot',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
@@ -37,12 +29,6 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=100)),
                 ('location', models.CharField(max_length=200)),
                 ('totalSpots', models.IntegerField()),
-            ],
-        ),
-        migrations.CreateModel(
-            name='Recommendation',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
             ],
         ),
         migrations.CreateModel(
