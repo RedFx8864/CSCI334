@@ -99,3 +99,20 @@ class Booking(models.Model):
     #return booking info for testing 
     def __str__(self):
         return f"Booking ID: {self.id}\nUserID: {self.user.id}\nParkingSpot: [{self.parkingSpot}]\nDate: {self.date}\nTime: {self.startTime}\nDuration: {self.duration} minutes"
+
+class Recommendation(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recommendations')
+    parkingSpot = models.ForeignKey(ParkingSpot, on_delete=models.CASCADE, related_name='recommendations')
+    zone = models.ForeignKey(ParkingZone, on_delete=models.CASCADE, related_name='recommendations')
+    date = models.DateField()
+    startTime = models.TimeField()
+    duration = models.IntegerField()
+    score = models.FloatField()
+    reason = models.CharField(max_length=255)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Recommendation for {self.user} → Spot {self.parkingSpot} (score={self.score:.2f})"
+
+    class Meta:
+        ordering = ['-timestamp']   

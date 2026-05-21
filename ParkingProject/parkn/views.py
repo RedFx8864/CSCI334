@@ -78,16 +78,25 @@ def selectParkingSpot(request):
     bookingData = request.session.get("bookingData")
 
     if not bookingData:
-        return redirect("createBookingPage")
+        return redirect("createBooking")
 
-    #get data from session
     zone = ParkingZone.objects.get(id=bookingData["zoneId"])
     date = datetime.strptime(bookingData["date"], "%Y-%m-%d").date()
     startTime = datetime.strptime(bookingData["startTime"], "%H:%M:%S").time()
     duration = bookingData["duration"]
 
-    #check available spots during the time frame
     availableSpots = ParkingSpot.getAvailableSpots(zone, date, startTime, duration)
+
+    from .engine import RecommendationEngine
+    engine = RecommendationEngine(
+        user=request.user,
+        zone=zone,
+        date=date,
+        startTime=startTime,
+        duration=duration,
+        availableSpots=availableSpots,
+    )
+    recommendation = engine.recommend()
 
     if request.method == "POST":
         form = SelectParkingSpotForm(request.POST)
@@ -95,12 +104,9 @@ def selectParkingSpot(request):
 
         if form.is_valid():
             spot = form.cleaned_data["parkingSpot"]
-
             Booking.createBooking(request.user, spot, date, startTime, duration)
-            #clean session data
             del request.session["bookingData"]
-
-            return redirect("index") #or to a confirmation page, which i dont think we need
+            return redirect("index")
 
     else:
         form = SelectParkingSpotForm()
@@ -108,7 +114,8 @@ def selectParkingSpot(request):
 
     return render(request, "booking/selectParkingSpot.html", {
         "form": form,
-        "availableSpots": availableSpots
+        "availableSpots": availableSpots,
+        "recommendation": recommendation,
     })
 
 @login_required

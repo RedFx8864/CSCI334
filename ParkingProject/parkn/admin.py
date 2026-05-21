@@ -5,7 +5,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 from django.utils import timezone
 
-from .models import Booking, ParkingSpot, ParkingZone
+from .models import Booking, ParkingSpot, ParkingZone, Recommendation
 
 
 # Here I`m showing a user`s bookings while editing a user.
@@ -156,3 +156,10 @@ class CustomUserAdmin(BaseUserAdmin):
     @admin.display(description="Bookings")
     def booking_count(self, obj):
         return obj.bookings.count()
+
+@admin.register(Recommendation)
+class RecommendationAdmin(admin.ModelAdmin):
+    list_display = ("id", "user", "parkingSpot", "zone", "date", "startTime", "score", "reason", "timestamp")
+    search_fields = ("user__username", "zone__name")
+    list_filter = ("date", "zone")
+    ordering = ("-timestamp",)
